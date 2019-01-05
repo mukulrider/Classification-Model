@@ -4,6 +4,9 @@ df_training  =  df[df['txn_date']<'2018-06-11']
 from patsy import dmatrices, Treatment
 y, X = dmatrices('churn_perc ~ nuts_perc+android_perc+wap_perc+website_perc+ios_perc+nb_perc+non_promo_txn_perc+prepaid_perc+other_business_subtype_perc+ruts_perc+dth_perc+broadband_perc+wallet_only_perc+pg_wallet_perc+p2p_perc+upi_perc+dc_perc+pg_only_perc+postpaid_perc+electricity_perc+cc_perc', df_training, return_type = 'dataframe')
 
+print(df_20['secondary_product_choice'].value_counts()/len(df_20['secondary_product_choice']))
+(df_20['secondary_product_choice'].value_counts()/len(df_20['secondary_product_choice'])).plot.bar()
+
 df=df[(df['column'].isin([20,40,50])) | (df['column']>=75)]
 df.loc[df['column']==20,'class']=20
 df.loc[df['column'].between(75,100),'class']=75
