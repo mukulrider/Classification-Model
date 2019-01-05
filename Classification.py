@@ -368,3 +368,44 @@ from xgboost.sklearn import XGBClassifier
 from sklearn import cross_validation, metrics   #Additional scklearn functions
 from sklearn.datasets import dump_svmlight_file
 from sklearn.metrics import precision_score
+
+
+import  imp
+from sklearn.externals import joblib
+from time import gmtime, strftime
+loaded_model = joblib.load('/home/pi_analytics/Mukul/NutsModel/nuts_churn_prediction_new.pkl')
+
+print("Model Imported!")
+y_pred = loaded_model.predict(df2)
+
+df['churn_pred']=y_pred
+df['churn_prob']=loaded_model.predict_proba(df2)[:,1]
+
+conditions = [
+    (df['churn_prob'] >=0) & (df['churn_prob'] <=0.155847),
+    (df['churn_prob'] >0.155847) & (df['churn_prob'] <=0.232601),
+    (df['churn_prob'] >0.232601) & (df['churn_prob'] <=0.346943),
+    (df['churn_prob'] >0.346943) & (df['churn_prob'] <=0.456311),
+    (df['churn_prob'] >0.456311) & (df['churn_prob'] <=0.594372),
+    (df['churn_prob'] >0.594372) & (df['churn_prob'] <=0.720649),
+    (df['churn_prob'] >0.720649) & (df['churn_prob'] <=0.862170),
+    (df['churn_prob'] >0.862170) & (df['churn_prob'] <=0.949210),
+    (df['churn_prob'] >0.949210) & (df['churn_prob'] <=0.983249),
+    (df['churn_prob'] >0.983249)]
+deciles = [1,2,3,4,5,6,7,8,9,10]
+df['decile'] = np.select(conditions, deciles)
+
+df['first_txn_date']=pd.to_datetime(df['first_txn_date'], format='%Y-%m-%d', errors='ignore')
+df['model_run_date']=df['first_txn_date']+pd.DateOffset(days=4)
+df['inserted_time']=strftime("%Y-%m-%d %H:%M:%S", gmtime())
+
+df.loc[df['decile'] == 1,'action_date']=df['model_run_date']+pd.DateOffset(days=15)
+df.loc[df['decile'].between(2,5),'action_date']=df['model_run_date']+pd.DateOffset(days=7)
+df.loc[df['decile'].between(6,10),'action_date']=df['model_run_date']+pd.DateOffset(days=3)
+
+print("Final Data Ready!")
+
+from sqlalchemy import create_engine
+
+df3 = df[['ims_id','first_txn_date','churn_pred','churn_prob','decile','model_run_date','action_date','inserted_time']]
+df3.to_csv("/data/pi_data/Mukul/nuts_data/nuts_churn_action_date_new.csv",index=False)
