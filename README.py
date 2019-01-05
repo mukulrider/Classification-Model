@@ -1,11 +1,5 @@
 # Classification-Model
 
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Aug 22 16:05:18 2018
-
-@author: fcmg10825
-"""
 # Garbage Collection
 import gc
  
@@ -39,6 +33,16 @@ df.columns[df.isna().any()].tolist()
 df['last_txn_promo_amount'] = df['last_txn_promo_amount'].fillna(0)
 df['grade_overall'] = df['grade_overall'].fillna('Unknown')
 #df.loc[df['grade_overall'].isin(['NA']),'grade_overall']='Unknown'
+#df=df[df['first_txn_date'].between('2018-04-01','2018-05-15')]
+
+# pg_mode_values = {'AMEX':'CC','DINR':'CC'}
+# df.replace({'pg_mode':pg_mode_values}, inplace=True)
+#for column in df.columns:
+#    df[column].fillna(0, inplace=True)
+#d=df.groupby(['pg_mode','platform','txn_type']).size().reset_index(name='counts')
+
+df_bivariate = df.groupby('churn').mean()[['platform_Android']]
+df_bivariate.plot.line()
 
 #df[['campaign_amount']] = df[['campaign_amount']].apply(pd.to_numeric,errors='ignore')
 #df.loc[df['last_txn_product'].isin(['DONATION','Datacard Postpaid','FC_CREDIT','Metro','Water','windows','Datacard',
@@ -55,6 +59,10 @@ import pandas as pd
 #from sklearn import model_selection
 #from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.ensemble import GradientBoostingClassifier
 #from imblearn.over_sampling import SMOTE,RandomOverSampler
 from sklearn.metrics import confusion_matrix
 #from sklearn.externals import joblib
@@ -298,3 +306,65 @@ plt.ylim([0, 1])
 plt.ylabel('True Positive Rate')
 plt.xlabel('False Positive Rate')
 plt.show()
+
+from  collections import OrderedDict
+
+ensemble_clfs = [
+    ("RandomForestClassifier, max_features='sqrt'",
+        RandomForestClassifier(warm_start=True, oob_score=True,class_weight='balanced',
+                               max_features="sqrt",
+                               criterion = 'entropy', random_state = 42))
+    ,("RandomForestClassifier, max_features=22",
+        RandomForestClassifier(warm_start=True, max_features='log2',class_weight='balanced',
+                               oob_score=True,
+                               random_state=42))
+    ,("RandomForestClassifier, max_features=None",
+        RandomForestClassifier(warm_start=True, max_features=None,class_weight='balanced',
+                               oob_score=True,
+                               random_state=42))
+]
+
+error_rate = OrderedDict((label, []) for label, _ in ensemble_clfs)
+
+# Range of `n_estimators` values to explore.
+min_estimators = 50
+max_estimators = 150
+
+for label, clf in ensemble_clfs:
+    for i in range(min_estimators, max_estimators + 1,20):
+        clf.set_params(n_estimators=i)
+        clf.fit(x_validate, y_validate)
+        # Record the OOB error for each `n_estimators=i` setting.
+        oob_error = 1 - clf.oob_score_
+        error_rate[label].append((i, oob_error))
+        print(i, clf.oob_score_)
+
+
+
+# Generate the "OOB error rate" vs. "n_estimators" plot.
+for label, clf_err in error_rate.items():
+    xs, ys = zip(*clf_err)
+    plt.plot(xs, ys, label=label)
+
+plt.xlim(min_estimators, max_estimators)
+plt.xlabel("n_estimators")
+plt.ylabel("OOB error rate")
+plt.legend(loc="upper right")
+
+kfold = model_selection.KFold(n_splits=5, random_state=42)
+ABClassifier = AdaBoostClassifier(base_estimator=DecisionTreeClassifier(), n_estimators=50, learning_rate=1.0, algorithm='SAMME.R', random_state=42)
+ABClassifier.fit(X_train,y_train)
+results = model_selection.cross_val_score(ABClassifier, X_train, y_train, cv=kfold)
+print(results.mean())
+
+kfold = model_selection.KFold(n_splits=5, random_state=42)
+GBClassifier = GradientBoostingClassifier(base_estimator=DecisionTreeClassifier(), n_estimators=100, learning_rate=1.0, random_state=42)
+GBClassifier.fit(X_train,y_train)
+results = model_selection.cross_val_score(GBClassifier, X_train, y_train, cv=kfold)
+print(results.mean())
+
+import xgboost as xgb
+from xgboost.sklearn import XGBClassifier
+from sklearn import cross_validation, metrics   #Additional scklearn functions
+from sklearn.datasets import dump_svmlight_file
+from sklearn.metrics import precision_score
