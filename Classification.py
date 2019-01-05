@@ -369,7 +369,7 @@ from sklearn import cross_validation, metrics   #Additional scklearn functions
 from sklearn.datasets import dump_svmlight_file
 from sklearn.metrics import precision_score
 
-
+joblib.dump(RFClassifier, 'C://Users/fcmg10825/Desktop/mukul/NUTS Model/nuts_churn_prediction_new.pkl') 
 import  imp
 from sklearn.externals import joblib
 from time import gmtime, strftime
@@ -402,8 +402,6 @@ df['inserted_time']=strftime("%Y-%m-%d %H:%M:%S", gmtime())
 df.loc[df['decile'] == 1,'action_date']=df['model_run_date']+pd.DateOffset(days=15)
 df.loc[df['decile'].between(2,5),'action_date']=df['model_run_date']+pd.DateOffset(days=7)
 df.loc[df['decile'].between(6,10),'action_date']=df['model_run_date']+pd.DateOffset(days=3)
-
-print("Final Data Ready!")
 
 from sqlalchemy import create_engine
 
