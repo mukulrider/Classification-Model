@@ -209,12 +209,17 @@ feature_importances = sorted(feature_importances, key = lambda x: x[1], reverse 
 plt.style.use('fivethirtyeight')
 # list of x locations for plotting
 x_values = list(range(len(importances)))
+xy=OrderedDict(feature_importances)
+tick_list = list(xy.keys())
+print("X_Values:",tick_list)
+y_values = list(xy.values())
+print("Y_Values:",y_values)
 # Make a bar chart
-plt.bar(x_values, importances, orientation = 'vertical')
-# Tick labels for x axis
-plt.xticks(x_values, feature_list, rotation='vertical')
-# Axis labels and title
-plt.ylabel('Importance'); plt.xlabel('Variable'); plt.title('Variable Importances');
+plt.bar(x_values, y_values, orientation = 'vertical')
+# # Tick labels for x axis
+plt.xticks(x_values, tick_list, rotation='vertical')
+# # Axis labels and title
+plt.ylabel('Importance %'); plt.xlabel('Variable'); plt.title('Variable Importances');
 
 X_test['churn_prob']=RFClassifier.predict_proba(X_test)[:,1]
 X_test['is_reactivated']=y_test
