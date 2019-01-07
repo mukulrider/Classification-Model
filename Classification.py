@@ -47,7 +47,28 @@ df.columns[df.isna().any()].tolist()
 for col in df.columns:
  df[col] = df[col].fillna(0,inplace=True)
  
-df['grade_overall'] = df['grade_overall'].fillna('Unknown')
+## Outlier Detection Plots 
+i = 'cb_txn_count'
+q75, q25 = np.percentile(df.cb_txn_count.dropna(), [75 ,25])
+iqr = q75 - q25
+ 
+min = q25 - (iqr*1.5)
+max = q75 + (iqr*1.5)
+print(min,max)
+ 
+plt.figure(figsize=(10,8))
+plt.subplot(211)
+plt.xlim(df[i].min(), df[i].max()*1.1)
+plt.axvline(x=min)
+plt.axvline(x=max)
+ 
+ax = df[i].plot(kind='kde')
+ 
+plt.subplot(212)
+plt.xlim(df[i].min(), df[i].max()*1.1)
+sns.boxplot(x=df[i])
+plt.axvline(x=min)
+plt.axvline(x=max)
  
 #df.loc[df['grade_overall'].isin(['NA']),'grade_overall']='Unknown'
 #df=df[df['first_txn_date'].between('2018-04-01','2018-05-15')]
