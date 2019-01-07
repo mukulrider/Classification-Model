@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import psycopg2
-df = pd.read_csv("C:/Users/fcmg10825/Desktop/mukul/Analysis Files/RUTS Model/mukul_ruts_propensity_data_jun1_july10.csv", sep=',',header=0,index_col=0)
+df = pd.read_csv("C:/Users/fcmg10825/Desktop/mukul/Analysis Files/RUTS Model/mukul_ruts_propensity_data_jun1_july10.csv", sep=',',header=0,index_col=0,usecols=['col1','col2','col3','col4'])
 
 
 
@@ -34,6 +34,7 @@ df[df['column_name1']=='Prepaid']['column_name2'].value_counts().nlargest(10).pl
 
 column_values = {'Prepaid' : 1, 'Postpaid' : 2, 'DTH':3, 'Electricity':4, 'Broadband':5, 'ONLINE':6}
 df.replace({'column': column_values}, inplace=True)
+
 
 ## Check for Columns having NULL Values
 df.columns[df.isna().any()].tolist()
