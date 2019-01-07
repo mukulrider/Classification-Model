@@ -16,8 +16,6 @@ import numpy as np
 import psycopg2
 df = pd.read_csv("C:/Users/fcmg10825/Desktop/mukul/Analysis Files/RUTS Model/mukul_ruts_propensity_data_jun1_july10.csv", sep=',',header=0,index_col=0)
 
-con=psycopg2.connect(dbname= 'walletdb', host='kiwi.cd2pip2qjan8.ap-south-1.redshift.amazonaws.com', 
-port= '5439', user= 'analyticsuser', password= 'Thisispasswordfornewkiwianalyticsuser1!')
 
 
 #df1 = pd.read_sql_query("SELECT * FROM tempload.mukul_cust_reactivation_propensity_data_val_final;", engine)
@@ -28,10 +26,23 @@ df=df.loc[df['txn_count']>2]
 
 #df1.to_csv("C:/Users/fcmg10825/Desktop/mukul/Analysis Files/RUTS Model/mukul_ruts_propensity_data_jun1_july10.csv")
 
+d=df.groupby(['pg_mode','platform','txn_type']).size().reset_index(name='counts')
+print(d)
+
+df['column_name'].value_counts().nlargest(10)/df['column_name'].count()
+df[df['column_name1']=='Prepaid']['column_name2'].value_counts().nlargest(10).plot.bar()
+
+column_values = {'Prepaid' : 1, 'Postpaid' : 2, 'DTH':3, 'Electricity':4, 'Broadband':5, 'ONLINE':6}
+df.replace({'column': column_values}, inplace=True)
+
 ## Check for Columns having NULL Values
 df.columns[df.isna().any()].tolist()
-df['last_txn_promo_amount'] = df['last_txn_promo_amount'].fillna(0)
+
+for col in df.columns:
+ df[col] = df[col].fillna(0,inplace=True)
+ 
 df['grade_overall'] = df['grade_overall'].fillna('Unknown')
+ 
 #df.loc[df['grade_overall'].isin(['NA']),'grade_overall']='Unknown'
 #df=df[df['first_txn_date'].between('2018-04-01','2018-05-15')]
 
