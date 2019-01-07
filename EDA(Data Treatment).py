@@ -3,8 +3,12 @@ d=df.groupby(['pg_mode','platform','txn_type']).size().reset_index(name='counts'
 print(d)
 
 # Column Values Frequency Distribution
+print(df['business_subtype'].value_counts()/len(df['business_subtype']))
+(df['business_subtype'].value_counts()/len(df['business_subtype'])).plot.bar()
+
 df['column_name'].value_counts().nlargest(10)/df['column_name'].count()
 df[df['column_name1']=='Prepaid']['column_name2'].value_counts().nlargest(10).plot.bar()
+
 
 # Dummifying Categorical Columns
 column_values = {'Prepaid' : 1, 'Postpaid' : 2, 'DTH':3, 'Electricity':4, 'Broadband':5, 'ONLINE':6}
