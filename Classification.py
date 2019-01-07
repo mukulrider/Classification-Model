@@ -26,15 +26,20 @@ df=df.loc[df['txn_count']>2]
 
 #df1.to_csv("C:/Users/fcmg10825/Desktop/mukul/Analysis Files/RUTS Model/mukul_ruts_propensity_data_jun1_july10.csv")
 
+# Calculating Aggregated Value and renaming Column
 d=df.groupby(['pg_mode','platform','txn_type']).size().reset_index(name='counts')
 print(d)
 
+# Column Values Frequency Distribution
 df['column_name'].value_counts().nlargest(10)/df['column_name'].count()
 df[df['column_name1']=='Prepaid']['column_name2'].value_counts().nlargest(10).plot.bar()
 
+# Dummifying Categorical Columns
 column_values = {'Prepaid' : 1, 'Postpaid' : 2, 'DTH':3, 'Electricity':4, 'Broadband':5, 'ONLINE':6}
 df.replace({'column': column_values}, inplace=True)
 
+# Changing Datatype to Integer
+df["column_name"]=pd.to_numeric(df["column_name"],downcast='integer')
 
 ## Check for Columns having NULL Values
 df.columns[df.isna().any()].tolist()
